@@ -29,7 +29,9 @@ module RedminePreviewOffice
         base.class_eval do
           unloadable
             
-          alias_method_chain :info, :libreoffice_for_preview_office
+          #alias_method_chain :info, :libreoffice_for_preview_office
+	  alias_method :info_without_libreoffice_for_preview_office, :info
+	  alias_method :info, :info_with_libreoffice_for_preview_office
           
         end #base
         

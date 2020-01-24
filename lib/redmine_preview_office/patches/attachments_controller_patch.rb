@@ -29,7 +29,9 @@ module RedminePreviewOffice
         base.class_eval do
           unloadable
             
-          alias_method_chain     :show, :office
+          #alias_method_chain     :show, :office
+	  alias_method :show_without_office, :show
+	  alias_method :show, :show_with_office
          
           alias_method           :find_attachment_for_preview_office, :find_attachment
           before_action          :find_attachment_for_preview_office, :only => [:preview_office]

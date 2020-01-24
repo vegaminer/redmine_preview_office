@@ -49,13 +49,36 @@ module RedminePreviewOffice
 			    if Redmine::Platform.mswin?
 			      cmd = "cd #{tmpdir} & #{shell_quote @REDMINE_PREVIEW_OFFICE_CONVERT_BIN} --convert-to pdf #{shell_quote source} & move #{shell_quote File.basename(source, File.extname(source)) + ".pdf"} #{shell_quote target}"
 			    else
-				  cmd = "cd #{tmpdir}; #{shell_quote @REDMINE_PREVIEW_OFFICE_CONVERT_BIN} --convert-to pdf #{shell_quote source}; mv #{shell_quote File.basename(source, File.extname(source)) + ".pdf"} #{shell_quote target}"
+			      cmd = "PATH='#{ENV[ 'PATH' ]}';cd #{tmpdir}; #{shell_quote @REDMINE_PREVIEW_OFFICE_CONVERT_BIN} --convert-to pdf #{shell_quote source}; mv #{shell_quote File.basename(source, File.extname(source)) + ".pdf"} #{shell_quote target}"
                 end
                 
-				unless system(cmd)
-				  logger.error("Creating preview with libreoffice failed (#{$?}):\nCommand: #{cmd}")
+                #cmd = cmd + ' 2&>1'
+                #output = `cmd`
+                #logger.error( 'AAAAA' )
+                #logger.error( 'PATH' )
+                #logger.error(  ENV[ 'PATH' ] )
+                #cmd='set' 
+                #syscall(cmd) 
+                 logger.error( 'CMD: ' )            
+                 logger.error(cmd)
+                
+                stdout, stderr, status = Open3.capture3( cmd )
+                    
+                 logger.error( 'STDERR: ' )
+                 logger.error( stderr )
+                 logger.error( 'STDOUT: ' )
+                 logger.error( stdout )
+                 logger.error( 'STATUS: ' )
+                 logger.error( status )
+			    
+                unless status.success?
+        		  logger.error("Creating preview with libreoffice failed (#{$?}):\nCommand: #{cmd}")
 				  return nil
-				end
+                end
+		#		unless system(cmd)
+		#		  logger.error("Creating preview with libreoffice failed (#{$?}):\nCommand: #{cmd}")
+		#		  return nil
+		#		end
 			  end
 			end
 			target
