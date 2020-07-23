@@ -26,7 +26,6 @@ module RedminePreviewOffice
         base.extend(ClassMethods)
         base.send(:include, InstanceMethods)
         base.class_eval do
-
           unloadable 	
           
           # for those, who read and analyze code: I haven't figured it out yet how to unset 
@@ -34,54 +33,78 @@ module RedminePreviewOffice
           # in a base.class_eval block
           #
 		  @REDMINE_PREVIEW_OFFICE_CONVERT_BIN = ('soffice').freeze
-		  
+	      @TMP_LOCK = Mutex.new
+
 		  # Generates a thumbnail for the source image to target
-		  def self.generate_preview_office(source, target )
+          def self.generate_preview_office(source, target )
+            begin
+              @TMP_LOCK.lock
+              self.do_convert( source, target )
+            ensure
+              @TMP_LOCK.unlock
+            end
+          end
 
-			unless File.exists?(target)
+		  def self.do_convert(source, target )
+            return target if File.exists?(target)
 
-			  directory = File.dirname(target)
-			  unless File.exists?(directory)
-				FileUtils.mkdir_p directory
-			  end
-			  			                
-			  Dir.mktmpdir do |tmpdir|
-			    if Redmine::Platform.mswin?
-			      cmd = "cd #{tmpdir} & #{shell_quote @REDMINE_PREVIEW_OFFICE_CONVERT_BIN} --convert-to pdf #{shell_quote source} & move #{shell_quote File.basename(source, File.extname(source)) + ".pdf"} #{shell_quote target}"
-			    else
-			      cmd = "PATH='#{ENV[ 'PATH' ]}';cd #{tmpdir}; #{shell_quote @REDMINE_PREVIEW_OFFICE_CONVERT_BIN} --convert-to pdf #{shell_quote source}; mv #{shell_quote File.basename(source, File.extname(source)) + ".pdf"} #{shell_quote target}"
-                end
+            target_dir = File.dirname(target)
+            logger.debug( 'TARGET_DIR: ' + target_dir.to_s )
+            FileUtils.mkdir_p target_dir unless File.exists?(target_dir)
+  
+            target_lock = target + '.lock'
+            # File.open( target_lock, "wb" ) { |inf|
+            #   if inf.flock( File::LOCK_EX|File::LOCK_NB ) != 0
+            #@TMP_LOCK.lock
+            return target if File.exists?(target)
+
+	        #if File.exists?( target_lock )
+            #  @TMP_LOCK.unlock
+            #  logger.debug( 'Target lock file exists, waiting: ' + target.to_s )
+            #  1.upto(30) do |n|
+            #    return target if File.exists?( target )
+            #    logger.debug( 'Sleeping: ' + n.to_s + ' seconds' )
+            #    sleep 1 # second
+            #  end
+            #  logger.debug( 'Waiting for target timeout. Exiting' )
+            #  return nil  
+            #else
+			#  File.atomic_write( target_lock ) {|file| file.write( "locked" ) }
+            #  @TMP_LOCK.unlock
+            #end
+ 
+              
+	        puts "------------------- FGFGFGFGGFGFGFGFGFGFGFGFGFGFGFGFGFGFG ----------------------"
+            logger.debug( "SRC: " + source.to_s )
+            logger.debug( "DST: " + target.to_s )
                 
-                #cmd = cmd + ' 2&>1'
-                #output = `cmd`
-                #logger.error( 'AAAAA' )
-                #logger.error( 'PATH' )
-                #logger.error(  ENV[ 'PATH' ] )
-                #cmd='set' 
-                #syscall(cmd) 
-                 logger.error( 'CMD: ' )            
-                 logger.error(cmd)
-                
-                stdout, stderr, status = Open3.capture3( cmd )
+            stdout, stderr, status = Open3.capture3( { 'PATH' => ENV[ 'PATH' ] }, @REDMINE_PREVIEW_OFFICE_CONVERT_BIN, '--convert-to', 'pdf', '--outdir', target_dir, source )
                     
-                 logger.error( 'STDERR: ' )
-                 logger.error( stderr )
-                 logger.error( 'STDOUT: ' )
-                 logger.error( stdout )
-                 logger.error( 'STATUS: ' )
-                 logger.error( status )
-			    
-                unless status.success?
-        		  logger.error("Creating preview with libreoffice failed (#{$?}):\nCommand: #{cmd}")
-				  return nil
-                end
-		#		unless system(cmd)
-		#		  logger.error("Creating preview with libreoffice failed (#{$?}):\nCommand: #{cmd}")
-		#		  return nil
-		#		end
-			  end
-			end
-			target
+            logger.debug( 'STDERR: ' )
+            logger.debug( stderr )
+            logger.debug( 'STDOUT: ' )
+            logger.debug( stdout )
+            logger.debug( 'STATUS: ' )
+            logger.debug( status )
+			     
+            tmp_target = target_dir + '/' + File.basename(source, File.extname(source)) + ".pdf"
+            unless File.exists?( tmp_target) # status.success?
+              # File.delete( target_lock )
+              cmd = "PATH='#{ENV[ 'PATH' ]}  #{shell_quote @REDMINE_PREVIEW_OFFICE_CONVERT_BIN} --convert-to pdf --outdir  #{shell_quote target_dir} #{shell_quote source}"
+              puts "-------------------------------------------------------------------------------"
+   		      logger.debug( "Creating preview with libreoffice failed (#{$?}):\nCommand: #{cmd}" )
+             # File.delete( target_lock )
+              #@TMP_LOCK.unlock
+			  return nil
+            end
+            tmp_target = target_dir + '/' + File.basename(source, File.extname(source)) + ".pdf"
+            logger.debug( 'RENAME: ' + tmp_target + ' => ' + target )
+            File.rename( tmp_target, target )
+            logger.debug( 'RENAME OK: ' + target_lock )  
+            #File.delete( target_lock )
+            #@TMP_LOCK.unlock
+            #logger.debug( 'RENAME OK: ' + target )
+		    return target
 		  end #def 
 		                     
 		  def self.libreoffice_available?

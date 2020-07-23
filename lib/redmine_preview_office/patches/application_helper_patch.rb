@@ -40,8 +40,8 @@ module RedminePreviewOffice
 								 { :style   => "position:absolute;top:0;left:0;width:95%;height:100%;",
 								   :title   => attachment.filename,
 								   :type    => "application/pdf",
-								   :data    => preview_office_path(attachment),
-								   :onload  => "resizeObject(this);"
+								   :data    => preview_office_path(attachment)
+								   #:onload  => "resizeObject(this);"
 								  }.merge(options)
 							 ),
 							 :style => "position:relative;padding-top:141%;",
@@ -58,15 +58,16 @@ module RedminePreviewOffice
 								   :frameborder          => "0",
 								   :allowtransparency    => "true",
 								   :title                => attachment.filename,
-								   :src                  => preview_office_url(attachment),
-								   :onload               => "resizeObject(this);"
+								   :src                  => preview_office_url(attachment)
+								   #:onload               => "resizeObject(this);"
 								  }.merge(options)
 							 ),
 							 :style => "position:relative;padding-top:141%;",
 							 :id => 'iframe_preview'
                 )
 #              end #case
-                return embed + iframe
+                js = javascript_tag "$(document).ready( function() { console.log( '#{preview_office_url(attachment)}' ); setPreviewSrc( '#{preview_office_url(attachment)}' ) } )"
+                return embed + iframe + js
           end #def
                                         
         end #base

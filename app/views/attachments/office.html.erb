@@ -1,6 +1,8 @@
 <%= render :layout => 'layouts/file' do %>
   <script type="text/javascript">  
-        $(document).ready(function(){	  
+       // $(document).ready(function(){	  
+     function setPreviewSrc( aSrc ) {
+        console.log( aSrc );
 		// Opera 8.0+
 		var isOpera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
 
@@ -34,15 +36,22 @@
 		if ( removeEmbed ) {
 			embed.remove();
 		}
+        else {
+            
+        }
 
 		if ( removeIframe ) {
 			iframe.remove();
 		}
-	});
+		else {
+
+        }
+	};
 
 	function resizeObject(obj) {
 	 // obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
 	}
+
   </script>
   <%= preview_office_tag @attachment %>
 <% end %>
