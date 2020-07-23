@@ -27,8 +27,8 @@
 		// Blink engine detection
 		var isBlink = (isChrome || isOpera) && !!window.CSS;
 
-		var embed  = $('#iframe_preview');
-		var iframe = $('#embed_preview');
+		var iframe = $('#iframe_preview');
+		var embed  = $('#embed_preview');
 
 		var removeEmbed = embed && !isFirefox;
 		var removeIframe = !removeEmbed;
@@ -37,14 +37,15 @@
 			embed.remove();
 		}
         else {
-            
+            $('#embed_href').attr( 'href', aSrc );
+            $('#embed_data').attr( 'data', aSrc );            
         }
 
 		if ( removeIframe ) {
 			iframe.remove();
 		}
 		else {
-
+			$('#iframe_src').attr( 'src', aSrc );
         }
 	};
 

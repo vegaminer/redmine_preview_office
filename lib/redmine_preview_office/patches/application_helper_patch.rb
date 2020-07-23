@@ -36,12 +36,15 @@ module RedminePreviewOffice
                 embed = content_tag(:div, 
 							 content_tag(
 								 :object,
-								 tag(:embed, :href => preview_office_path(attachment), :type => "application/pdf", :onload  => "resizeObject(this);"),
+								 #tag(:embed, :href => preview_office_path(attachment), :type => "application/pdf", :onload  => "resizeObject(this);"),
+                                 tag(:embed, :href => '', :type => "application/pdf", :id => 'embed_href' ),
 								 { :style   => "position:absolute;top:0;left:0;width:95%;height:100%;",
 								   :title   => attachment.filename,
 								   :type    => "application/pdf",
-								   :data    => preview_office_path(attachment)
+                                   :id      => "embed_data"
+								   #:data    => preview_office_path(attachment)
 								   #:onload  => "resizeObject(this);"
+                                   
 								  }.merge(options)
 							 ),
 							 :style => "position:relative;padding-top:141%;",
@@ -58,7 +61,8 @@ module RedminePreviewOffice
 								   :frameborder          => "0",
 								   :allowtransparency    => "true",
 								   :title                => attachment.filename,
-								   :src                  => preview_office_url(attachment)
+                                   :id                   => 'iframe_src' 
+								   #:src                  => preview_office_url(attachment)
 								   #:onload               => "resizeObject(this);"
 								  }.merge(options)
 							 ),
