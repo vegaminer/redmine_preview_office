@@ -30,10 +30,10 @@ module RedminePreviewOffice
           
           def preview_office_tag(attachment, options={})
           
-            case Setting['plugin_redmine_preview_office']['pdf_embedding'].to_i
+#            case Setting['plugin_redmine_preview_office']['pdf_embedding'].to_i
             
-              when 0
-                content_tag(:div, 
+#              when 0
+                embed = content_tag(:div, 
 							 content_tag(
 								 :object,
 								 tag(:embed, :href => preview_office_path(attachment), :type => "application/pdf", :onload  => "resizeObject(this);"),
@@ -44,10 +44,11 @@ module RedminePreviewOffice
 								   :onload  => "resizeObject(this);"
 								  }.merge(options)
 							 ),
-							 :style => "position:relative;padding-top:141%;"
+							 :style => "position:relative;padding-top:141%;",
+							 :id => 'embed_preview'
                 )
-              else
-                content_tag(:div, 
+ #             else
+               iframe = content_tag(:div, 
 							 content_tag(
 								 :iframe,
 								 "",
@@ -61,10 +62,11 @@ module RedminePreviewOffice
 								   :onload               => "resizeObject(this);"
 								  }.merge(options)
 							 ),
-							 :style => "position:relative;padding-top:141%;"
+							 :style => "position:relative;padding-top:141%;",
+							 :id => 'iframe_preview'
                 )
-              end #case
-
+#              end #case
+                return embed + iframe
           end #def
                                         
         end #base
